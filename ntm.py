@@ -94,7 +94,7 @@ class NTM(object):
             zeros = np.zeros(self.cell.input_dim, dtype=np.float32)
 
             tf.get_variable_scope().reuse_variables()
-            for seq_length in xrange(1, self.max_length + 1):
+            for seq_length in range(1, self.max_length + 1):
                 progress(seq_length / float(self.max_length))
 
                 input_ = tf.placeholder(tf.float32, [self.cell.input_dim],
@@ -119,7 +119,7 @@ class NTM(object):
                 if not forward_only:
                     # present targets
                     outputs, output_logits = [], []
-                    for _ in xrange(seq_length):
+                    for _ in range(seq_length):
                         output, output_logit, state = self.cell(zeros, state)
                         self.save_state(state, seq_length, is_output=True)
                         outputs.append(output)
@@ -129,7 +129,7 @@ class NTM(object):
                     self.output_logits[seq_length] = output_logits
 
             if not forward_only:
-                for seq_length in xrange(self.min_length, self.max_length + 1):
+                for seq_length in range(self.min_length, self.max_length + 1):
                     print(" [*] Building a loss model for seq_length %s" % seq_length)
 
                     loss = sequence_loss(
@@ -138,7 +138,7 @@ class NTM(object):
                         weights=[1] * seq_length,
                         average_across_timesteps=False,
                         average_across_batch=False,
-                        softmax_loss_function=softmax_loss_function)
+                        softmax_loss_function=tf.nn.sigmoid_cross_entropy_with_logits)
 
                     self.losses[seq_length] = loss
 
@@ -163,13 +163,13 @@ class NTM(object):
                                                     momentum=self.momentum)
 
                     reuse = seq_length != 1
+                    print(reuse)
                     with tf.variable_scope(tf.get_variable_scope(), reuse=reuse):
+                        print(tf.get_variable_scope().name)
                         self.optims[seq_length] = opt.apply_gradients(
-                            zip(grads, self.params),
-                            global_step=self.global_step)
+                            list(zip(grads, self.params)),global_step=self.global_step)
 
-        model_vars = \
-            [v for v in tf.global_variables() if v.name.startswith(self.scope)]
+        model_vars = [v for v in tf.global_variables() if v.name.startswith(self.scope)]
         self.saver = tf.train.Saver(model_vars)
         print(" [*] Build a NTM model finished")
 
@@ -182,7 +182,7 @@ class NTM(object):
                 state = self.prev_states[seq_length]
 
                 outputs, output_logits = [], []
-                for _ in xrange(seq_length):
+                for _ in range(seq_length):
                     output, output_logit, state = self.cell(zeros, state)
                     self.save_state(state, seq_length, is_output=True)
                     outputs.append(output)
@@ -218,7 +218,7 @@ class NTM(object):
                 outputs, output_logits = [], []
                 state = self.prev_states[seq_length]
 
-                for _ in xrange(seq_length):
+                for _ in range(seq_length):
                     output, output_logit, state = self.cell(zeros, state)
                     self.save_state(state, seq_length, is_output=True)
                     outputs.append(output)
@@ -242,7 +242,7 @@ class NTM(object):
             state_to_add = self.input_states
 
         if to:
-            for idx in xrange(from_, to + 1):
+            for idx in range(from_, to + 1):
                 state_to_add[idx].append(state)
         else:
             state_to_add[from_].append(state)

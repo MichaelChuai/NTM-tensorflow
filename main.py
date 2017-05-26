@@ -43,7 +43,7 @@ def create_ntm(config, sess, **ntm_args):
 def main(_):
     pp.pprint(flags.FLAGS.__flags)
 
-    with tf.device('/cpu:0'), tf.Session() as sess:
+    with tf.Session() as sess:
         try:
             task = importlib.import_module('tasks.%s' % FLAGS.task)
         except ImportError:

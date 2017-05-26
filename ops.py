@@ -156,8 +156,8 @@ def circular_convolution(v, k):
         else: return idx
 
     kernels = []
-    for i in xrange(size):
-        indices = [loop(i+j) for j in xrange(kernel_shift, -kernel_shift-1, -1)]
+    for i in range(size):
+        indices = [loop(i+j) for j in range(kernel_shift, -kernel_shift-1, -1)]
         v_ = tf.gather(v, indices)
         kernels.append(tf.reduce_sum(v_ * k, 0))
 
@@ -170,7 +170,7 @@ def circular_convolution(v, k):
     #         w = tf.gather(v, int(idx)) * tf.gather(kernel, j)
     #         output = tf.scatter_add(output, [i], tf.reshape(w, [1, -1]))
 
-    return tf.dynamic_stitch([i for i in xrange(size)], kernels)
+    return tf.dynamic_stitch([i for i in range(size)], kernels)
 
 def outer_product(*inputs):
     """Computes outer product.
@@ -190,13 +190,13 @@ def outer_product(*inputs):
     elif order == 3:
         size = []
         idx = 1
-        for i in xrange(order):
+        for i in range(order):
             size.append(inputs[i].get_shape()[0])
         output = tf.zeros(size)
 
         u, v, w = inputs[0], inputs[1], inputs[2]
         uv = tf.multiply(inputs[0], inputs[1])
-        for i in xrange(self.size[-1]):
+        for i in range(size[-1]):
             output = tf.scatter_add(output, [0,0,i], uv)
 
     return output

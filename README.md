@@ -14,8 +14,8 @@ The referenced torch code can be found [here](https://github.com/kaishengtai/tor
 Prerequisites
 -------------
 
-- Python 2.7 or Python 3.3+
-- [Tensorflow 1.1.0](https://www.tensorflow.org/)
+- Python 3.6
+- [Tensorflow 1.2.0](https://www.tensorflow.org/)
 - NumPy
 
 
