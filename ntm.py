@@ -92,40 +92,40 @@ class NTM(object):
                 self.save_state(prev_state, 0, self.max_length)
 
             zeros = np.zeros(self.cell.input_dim, dtype=np.float32)
-            tf.get_variable_scope().reuse_variables()
-            for seq_length in range(1, self.max_length + 1):
-                progress(seq_length / float(self.max_length))
+            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+                for seq_length in range(1, self.max_length + 1):
+                    progress(seq_length / float(self.max_length))
 
-                input_ = tf.placeholder(tf.float32, [self.cell.input_dim],
-                                        name='input_%s' % seq_length)
-                true_output = tf.placeholder(tf.float32, [self.cell.output_dim],
-                                             name='true_output_%s' % seq_length)
+                    input_ = tf.placeholder(tf.float32, [self.cell.input_dim],
+                                            name='input_%s' % seq_length)
+                    true_output = tf.placeholder(tf.float32, [self.cell.output_dim],
+                                                 name='true_output_%s' % seq_length)
 
-                self.inputs.append(input_)
-                self.true_outputs.append(true_output)
+                    self.inputs.append(input_)
+                    self.true_outputs.append(true_output)
 
-                # present inputs
-                _, _, prev_state = self.cell(input_, prev_state)
-                self.save_state(prev_state, seq_length, self.max_length)
+                    # present inputs
+                    _, _, prev_state = self.cell(input_, prev_state)
+                    self.save_state(prev_state, seq_length, self.max_length)
 
-                # present end symbol
-                if is_copy:
-                    _, _, state = self.cell(self.end_symbol, prev_state)
-                    self.save_state(state, seq_length)
+                    # present end symbol
+                    if is_copy:
+                        _, _, state = self.cell(self.end_symbol, prev_state)
+                        self.save_state(state, seq_length)
 
-                self.prev_states[seq_length] = state
+                    self.prev_states[seq_length] = state
 
-                if not forward_only:
-                    # present targets
-                    outputs, output_logits = [], []
-                    for _ in range(seq_length):
-                        output, output_logit, state = self.cell(zeros, state)
-                        self.save_state(state, seq_length, is_output=True)
-                        outputs.append(output)
-                        output_logits.append(output_logit)
+                    if not forward_only:
+                        # present targets
+                        outputs, output_logits = [], []
+                        for _ in range(seq_length):
+                            output, output_logit, state = self.cell(zeros, state)
+                            self.save_state(state, seq_length, is_output=True)
+                            outputs.append(output)
+                            output_logits.append(output_logit)
 
-                    self.outputs[seq_length] = outputs
-                    self.output_logits[seq_length] = output_logits
+                        self.outputs[seq_length] = outputs
+                        self.output_logits[seq_length] = output_logits
 
             if not forward_only:
                 for seq_length in range(self.min_length, self.max_length + 1):
@@ -158,9 +158,7 @@ class NTM(object):
                                                     decay=self.decay,
                                                     momentum=self.momentum)
                     reuse = seq_length != 1
-                    print(tf.global_variables())
                     with tf.variable_scope(tf.get_variable_scope(), reuse=reuse):
-                        print(tf.get_variable_scope().reuse)
                         self.optims[seq_length] = opt.apply_gradients(
                             zip(grads, self.params),
                             global_step=self.global_step)
