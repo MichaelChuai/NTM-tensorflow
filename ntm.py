@@ -128,7 +128,6 @@ class NTM(object):
                     self.output_logits[seq_length] = output_logits
 
             if not forward_only:
-                print(tf.get_variable_scope().name)
                 for seq_length in range(self.min_length, self.max_length + 1):
                     print(" [*] Building a loss model for seq_length %s" % seq_length)
                     loss = sequence_loss(
@@ -159,7 +158,9 @@ class NTM(object):
                                                     decay=self.decay,
                                                     momentum=self.momentum)
                     reuse = seq_length != 1
+                    print(tf.global_variables())
                     with tf.variable_scope(tf.get_variable_scope(), reuse=reuse):
+                        print(tf.get_variable_scope().reuse)
                         self.optims[seq_length] = opt.apply_gradients(
                             zip(grads, self.params),
                             global_step=self.global_step)
