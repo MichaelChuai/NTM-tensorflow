@@ -92,7 +92,6 @@ class NTM(object):
                 self.save_state(prev_state, 0, self.max_length)
 
             zeros = np.zeros(self.cell.input_dim, dtype=np.float32)
-
             tf.get_variable_scope().reuse_variables()
             for seq_length in range(1, self.max_length + 1):
                 progress(seq_length / float(self.max_length))
@@ -129,9 +128,9 @@ class NTM(object):
                     self.output_logits[seq_length] = output_logits
 
             if not forward_only:
+                print(tf.get_variable_scope().name)
                 for seq_length in range(self.min_length, self.max_length + 1):
                     print(" [*] Building a loss model for seq_length %s" % seq_length)
-
                     loss = sequence_loss(
                         logits=self.output_logits[seq_length],
                         targets=self.true_outputs[0:seq_length],
@@ -147,7 +146,6 @@ class NTM(object):
 
                     # grads, norm = tf.clip_by_global_norm(
                     #                  tf.gradients(loss, self.params), 5)
-
                     grads = []
                     for grad in tf.gradients(loss, self.params):
                         if grad is not None:
@@ -156,18 +154,15 @@ class NTM(object):
                                                           self.max_grad))
                         else:
                             grads.append(grad)
-
                     self.grads[seq_length] = grads
                     opt = tf.train.RMSPropOptimizer(self.lr,
                                                     decay=self.decay,
                                                     momentum=self.momentum)
-
                     reuse = seq_length != 1
-                    print(reuse)
                     with tf.variable_scope(tf.get_variable_scope(), reuse=reuse):
-                        print(tf.get_variable_scope().name)
                         self.optims[seq_length] = opt.apply_gradients(
-                            list(zip(grads, self.params)),global_step=self.global_step)
+                            zip(grads, self.params),
+                            global_step=self.global_step)
 
         model_vars = [v for v in tf.global_variables() if v.name.startswith(self.scope)]
         self.saver = tf.train.Saver(model_vars)
