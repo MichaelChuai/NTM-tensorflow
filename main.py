@@ -34,6 +34,7 @@ def create_ntm(config, sess, **ntm_args):
         write_head_size=config.write_head_size,
         read_head_size=config.read_head_size)
     scope = ntm_args.pop('scope', 'NTM-%s' % config.task)
+    print(scope)
     ntm = NTM(
         cell, sess, config.min_length, config.max_length,
         test_max_length=config.test_max_length, scope=scope, **ntm_args)
